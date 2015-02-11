@@ -1,15 +1,21 @@
 
 from urllib2 import Request, urlopen, URLError, HTTPError
-from xml.dom import minidom
+import xml.etree.ElementTree as ET
+import os
 
+def xml_parse(path):
+    if os.path.exists(path):
+        if not os.path.isfile(path):
+            raise IOError("not a file: %s" % path)
+    else:
+        raise IOError("file not found: %s" % path)
+    urls = []
+    tree = ET.parse(path)
+    root = tree.getroot()
+    for child in root:
+        urls.append(child.text)
+    return urls
 
-def xml_parse():
-    xmldoc = minidom.parse('urls.xml')
-    itemlist = xmldoc.getElementsByTagName('url')
-    print len(itemlist)
-    print itemlist[0].attributes['name'].value
-    for s in itemlist:
-        print s.attributes['name'].value
 
 
 def make_request():
@@ -26,6 +32,10 @@ def make_request():
         # everything is fine
         print 'Well done, comrade!'
 
+def main():
+    urls = xml_parse('urls.xml')
+    for url in urls:
+        print url
+    make_request()
 
-xml_parse()
-make_request()
+main()
