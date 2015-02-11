@@ -1,14 +1,14 @@
 
-from urllib2 import Request, urlopen, URLError, HTTPError
-import xml.etree.ElementTree as ET
-import os
+from pricescrapper import PriceScrapper
 
+'''
 def xml_parse(path):
     if os.path.exists(path):
         if not os.path.isfile(path):
-            raise IOError("not a file: %s" % path)
+            raise IOError("Not a file: %s" % path)
     else:
-        raise IOError("file not found: %s" % path)
+        raise IOError("File not found: %s" % path)
+
     urls = []
     tree = ET.parse(path)
     root = tree.getroot()
@@ -17,7 +17,17 @@ def xml_parse(path):
     return urls
 
 
+def levenstein_algo(s1,s2):
+    n = range(0,len(s1)+1)
+    for y in xrange(1,len(s2)+1):
+        l,n = n,[y]
+        for x in xrange(1,len(s1)+1):
+            n.append(min(l[x]+1,n[-1]+1,l[x-1]+((s2[y-1]!=s1[x-1]) and 1 or 0)))
+    return n[-1]
+'''
 
+
+'''
 def make_request():
     req = Request('http://www.voidspace.org.uk')
     try:
@@ -37,5 +47,15 @@ def main():
     for url in urls:
         print url
     make_request()
+'''
+
+def main():
+    scrappy = PriceScrapper(input_path='urls.xml', output_path='res.xml')
+    list = scrappy.parse_xml()
+    for url in list:
+        print url
+
+    scrappy.write_xml()
+
 
 main()

@@ -53,7 +53,7 @@ docs/_build/
 # PyBuilder
 target/
 
-#virtualenv
+#virtualenv folders
 bin/
 include/
 lib/
