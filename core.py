@@ -54,6 +54,7 @@ def main():
     list = scrappy.parse_xml()
     for url in list:
         print url
+    scrappy.scrapper(list)
 
     scrappy.write_xml()
 

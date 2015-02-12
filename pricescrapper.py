@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from urllib2 import Request, urlopen, URLError, HTTPError
 from bs4 import BeautifulSoup
 from lxml import etree
-
+from htmlparser import ProperParser
 
 
 class PriceScrapper(object):
@@ -27,8 +27,40 @@ class PriceScrapper(object):
             urls.append(child.text)
         return urls
 
-    def scrapper(self):
+    def scrapper(self, resources):
         self.output_list = []
+        '''
+        for resource in resources:
+            soup = BeautifulSoup(urlopen(resource).read())
+
+            for row in soup('table', {'class': 'price'})[0].tbody('tr'):
+                tds = row('td')
+                print tds[0].string, tds[1].string
+        '''
+
+
+        #bs4 try
+
+        for resource in resources:
+            try:
+                soup = BeautifulSoup(urlopen(resource).read())
+            except HTTPError as e:
+                print 'The server couldn\'t fulfill the request.'
+                print 'Error code: ', e.code
+            except URLError as e:
+                print 'We failed to reach a server.'
+                print 'Reason: ', e.reason
+            else:
+                # everything is fine
+
+                for link in soup.find_all('div'):
+                    temporary = link.get('class')
+                    # print(link.get('class'))
+
+                for content in temporary:
+                    if content == ['uah']:
+                        print content
+
 
 
     def write_xml(self):
@@ -46,11 +78,21 @@ class PriceScrapper(object):
         document = etree.parse(self.output_path, parser)
         document.write(self.output_path, pretty_print=True, encoding='utf-8')
 
+    @property
+    def set_output_path(self, output_path):
+        self.output_path = output_path
 
+    @property
+    def set_input_path(self, input_path):
+        self.input_path = input_path
 
-
-
-
+    def call_levenstein(s1,s2):
+        n = range(0,len(s1)+1)
+        for y in xrange(1,len(s2)+1):
+            l,n = n,[y]
+            for x in xrange(1,len(s1)+1):
+                n.append(min(l[x]+1,n[-1]+1,l[x-1]+((s2[y-1]!=s1[x-1]) and 1 or 0)))
+        return n[-1]
 
 
 
