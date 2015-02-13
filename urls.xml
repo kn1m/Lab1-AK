@@ -1,7 +1,8 @@
 <urls>
-    <url>http://rozetka.com.ua/lenovo_e10_30_59426147_black/p1192765/</url>
-    <url>http://rozetka.com.ua/dell_a771610sddw_24/p1999392/</url>
-    <url>http://rozetka.com.ua/dell_a871610s2bds1w-15/p1665922/#a</url>
-    <url>http://www.nofelet.in.ua/dell_inspiron_3542_(i35345dil-34)-product-9274.html</url>
-    <url>http://koba.ua/product/noutbuk_dell_inspiron_3542_156_intel_i3-4005u_4500dvdintwifibtlin_59256/</url>
+    <url maintag="div" tag="id" name="product_price_body">
+        http://koba.ua/product/noutbuk_dell_inspiron_3542_156_intel_i3-4005u_4500dvdintwifibtlin_59256/
+    </url>
+    <url maintag="span" tag="itemprop" name="price">
+        http://elmir.ua/laptops/notebook_dell_inspiron_3542_black_i35345dil-34.html?utm_campaign=%D0%9D%D0%BE%D1%83%D1%82%D0%B1%D1%83%D0%BA%D0%B8%2C%20%D1%83%D0%BB%D1%8C%D1%82%D1%80%D0%B0%D0%B1%D1%83%D0%BA%D0%B8&amp;utm_content=256258&amp;utm_medium=cpc&amp;utm_source=hotline&amp;utm_term=Dell%20Inspiron%203542%20%28I35345DIL-34%29
+    </url>
 </urls>

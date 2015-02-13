@@ -1,14 +1,15 @@
-__author__ = 'm3sc4'
+__author__ = 'kn1m'
 
 import os
 import xml.etree.ElementTree as ET
 from urllib2 import Request, urlopen, URLError, HTTPError
-from bs4 import BeautifulSoup
-from lxml import etree
-from htmlparser import ProperParser
+from lxml import etree, html
+from xml.dom import minidom
+import re
 
 
 class PriceScrapper(object):
+
     def __init__(self, input_path, output_path):
         if os.path.exists(input_path):
             if not os.path.isfile(input_path):
@@ -19,31 +20,32 @@ class PriceScrapper(object):
         self.input_path = input_path
         self.output_path = output_path
 
-    def parse_xml(self):
+    def get_urls_from_xml(self):
         urls = []
         tree = ET.parse(self.input_path)
         root = tree.getroot()
         for child in root:
-            urls.append(child.text)
+            # using regexp to remove whitespace from line, for better output later
+            line = child.text
+            line = re.sub('[\n\t ]', '', line)
+            urls.append(line)
         return urls
+
+    def get_tags_from_xml(self):
+        xml_doc = minidom.parse(self.input_path)
+        item_list = xml_doc.getElementsByTagName('url')
+        for s in item_list :
+            print s.attributes['maintag'].value
+            print s.attributes['tag'].value
+            print s.attributes['name'].value
+
 
     def scrapper(self, resources):
         self.output_list = []
-        '''
-        for resource in resources:
-            soup = BeautifulSoup(urlopen(resource).read())
-
-            for row in soup('table', {'class': 'price'})[0].tbody('tr'):
-                tds = row('td')
-                print tds[0].string, tds[1].string
-        '''
-
-
-        #bs4 try
 
         for resource in resources:
             try:
-                soup = BeautifulSoup(urlopen(resource).read())
+                test_req = urlopen(resource).read()
             except HTTPError as e:
                 print 'The server couldn\'t fulfill the request.'
                 print 'Error code: ', e.code
@@ -52,21 +54,22 @@ class PriceScrapper(object):
                 print 'Reason: ', e.reason
             else:
                 # everything is fine
-
-                for link in soup.find_all('div'):
-                    temporary = link.get('class')
-                    # print(link.get('class'))
-
-                for content in temporary:
-                    if content == ['uah']:
-                        print content
-
+                #page = requests.get(resource)
+                #tree = html.fromstring(page.text)
+                div = 'div'
+                tree = html.fromstring(test_req)
+                #prices = tree.xpath('//' + div + '[@id="product_price_body"]/text()')
+                prices = tree.xpath('//%s[@id="product_price_body"]/text()' % div)
+                for price in prices:
+                    pricez = ''.join(x for x in price if x.isdigit())
+                    print int(pricez)
 
 
     def write_xml(self):
         products = ET.Element("products")
         product = ET.SubElement(products, "product")
 
+        #XML writing tests
         ET.SubElement(product, "product_name", name="blah").text = "some value1"
         ET.SubElement(product, "lover_price", name="asdfasd").text = "some vlaue2"
         ET.SubElement(product, "higher_price", name="asdfdasd").text = "some vlaue2"
@@ -86,8 +89,9 @@ class PriceScrapper(object):
     def set_input_path(self, input_path):
         self.input_path = input_path
 
+    @staticmethod
     def call_levenstein(s1,s2):
-        n = range(0,len(s1)+1)
+        n = range(0, len(s1)+1)
         for y in xrange(1,len(s2)+1):
             l,n = n,[y]
             for x in xrange(1,len(s1)+1):

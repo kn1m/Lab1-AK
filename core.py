@@ -1,6 +1,7 @@
 
 from pricescrapper import PriceScrapper
 
+
 '''
 def xml_parse(path):
     if os.path.exists(path):
@@ -51,11 +52,11 @@ def main():
 
 def main():
     scrappy = PriceScrapper(input_path='urls.xml', output_path='res.xml')
-    list = scrappy.parse_xml()
+    list = scrappy.get_urls_from_xml()
     for url in list:
         print url
     scrappy.scrapper(list)
-
+    scrappy.get_tags_from_xml()
     scrappy.write_xml()
 
 
