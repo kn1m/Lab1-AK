@@ -59,5 +59,4 @@ def main():
     scrappy.get_tags_from_xml()
     scrappy.write_xml()
 
-
 main()

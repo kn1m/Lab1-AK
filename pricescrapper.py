@@ -42,7 +42,6 @@ class PriceScrapper(object):
 
     def scrapper(self, resources):
         self.output_list = []
-
         for resource in resources:
             try:
                 test_req = urlopen(resource).read()
