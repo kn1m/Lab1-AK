@@ -6,7 +6,7 @@ from urllib2 import Request, urlopen, URLError, HTTPError
 from lxml import etree, html
 from xml.dom import minidom
 import re
-
+from stringparser import StringParser
 
 class PriceScrapper(object):
 
@@ -19,6 +19,7 @@ class PriceScrapper(object):
 
         self.input_path = input_path
         self.output_path = output_path
+        self.tags = []
 
     def get_urls_from_xml(self):
         urls = []
@@ -34,11 +35,12 @@ class PriceScrapper(object):
     def get_tags_from_xml(self):
         xml_doc = minidom.parse(self.input_path)
         item_list = xml_doc.getElementsByTagName('url')
-        for s in item_list :
-            print s.attributes['maintag'].value
-            print s.attributes['tag'].value
-            print s.attributes['name'].value
-
+        for s in item_list:
+            temporary = []
+            temporary.append(s.attributes['maintag'].value)
+            temporary.append(s.attributes['tag'].value)
+            temporary.append(s.attributes['name'].value)
+            self.tags.append(temporary)
 
     def scrapper(self, resources):
         self.output_list = []
@@ -52,50 +54,78 @@ class PriceScrapper(object):
                 print 'We failed to reach a server.'
                 print 'Reason: ', e.reason
             else:
-                # everything is fine
-                #page = requests.get(resource)
-                #tree = html.fromstring(page.text)
-                div = 'div'
                 tree = html.fromstring(test_req)
-                #prices = tree.xpath('//' + div + '[@id="product_price_body"]/text()')
-                prices = tree.xpath('//%s[@id="product_price_body"]/text()' % div)
-                for price in prices:
-                    pricez = ''.join(x for x in price if x.isdigit())
-                    print int(pricez)
+                # getting product name
+                name = tree.xpath('//title/text()')
+                str_parser = StringParser(string=name[0])
+                new = str_parser.parse_product_name()
 
+                temporary = []
+                temporary.append(new)
+
+                # getting prices
+                for tag in self.tags:
+                    prices = tree.xpath('//%s[@%s="%s"]/text()' % (tag[0], tag[1], tag[2]))
+                    for price in prices:
+                        price_curr = ''.join(x for x in price if x.isdigit())
+                        temporary.append(price_curr)
+                self.output_list.append(temporary)
 
     def write_xml(self):
         products = ET.Element("products")
-        product = ET.SubElement(products, "product")
-
-        #XML writing tests
-        ET.SubElement(product, "product_name", name="blah").text = "some value1"
-        ET.SubElement(product, "lover_price", name="asdfasd").text = "some vlaue2"
-        ET.SubElement(product, "higher_price", name="asdfdasd").text = "some vlaue2"
+        for product_curr in self.output_list:
+            product = ET.SubElement(products, "product")
+            ET.SubElement(product, "product_name").text = product_curr[0]
+            ET.SubElement(product, "lover_price").text = product_curr[1]
+            ET.SubElement(product, "higher_price").text = product_curr[1]
 
         tree = ET.ElementTree(products)
         tree.write(self.output_path)
-
         parser = etree.XMLParser(resolve_entities=False, strip_cdata=False)
         document = etree.parse(self.output_path, parser)
         document.write(self.output_path, pretty_print=True, encoding='utf-8')
 
-    @property
-    def set_output_path(self, output_path):
-        self.output_path = output_path
+    def levenshtein(self, s1, s2):
+        cur = self
+        if len(s1) < len(s2):
+            return cur.levenshtein(s2, s1)
+        # len(s1) >= len(s2)
+        if len(s2) == 0:
+            return len(s1)
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1 # j+1 instead of j since previous_row and current_row are one character longer
+                deletions = current_row[j] + 1       # than s2
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        return previous_row[-1]
 
-    @property
-    def set_input_path(self, input_path):
-        self.input_path = input_path
+    def finalize_result(self):
+        cur = self
 
-    @staticmethod
-    def call_levenstein(s1,s2):
-        n = range(0, len(s1)+1)
-        for y in xrange(1,len(s2)+1):
-            l,n = n,[y]
-            for x in xrange(1,len(s1)+1):
-                n.append(min(l[x]+1,n[-1]+1,l[x-1]+((s2[y-1]!=s1[x-1]) and 1 or 0)))
-        return n[-1]
+        for first_product in self.output_list:
+            current_product = first_product[0]
+
+            for second_product in self.output_list:
+                # using Levenshtein distance algo to compare product names
+                    if cur.levenshtein(first_product[0], second_product[0]) < 15:
+                        fp = first_product[0].split()
+                        sp = second_product[0].split()
+
+                        final_product_name = ''
+
+                        # taking same words from both lists and creating new string w/ delimiters removing
+                        for f in fp:
+                            for s in sp:
+                                if str(s) == str(f) and len(s) > 1 and len(f) > 1:
+                                    final_product_name += s + ' '
+
+                        first_product[0] = final_product_name
+                        second_product[0] = final_product_name
+
 
 
 
