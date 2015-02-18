@@ -73,11 +73,21 @@ class PriceScrapper(object):
 
     def write_xml(self):
         products = ET.Element("products")
+
+        '''
         for product_curr in self.output_list:
             product = ET.SubElement(products, "product")
             ET.SubElement(product, "product_name").text = product_curr[0]
             ET.SubElement(product, "lover_price").text = product_curr[1]
             ET.SubElement(product, "higher_price").text = product_curr[1]
+        '''
+        for product_curr in self.finalized_list:
+            product = ET.SubElement(products, "product")
+            ET.SubElement(product, "product_name").text = product_curr[0]
+            ET.SubElement(product, "lover_price").text = min(product_curr[1])
+            ET.SubElement(product, "higher_price").text = max(product_curr[1])
+
+
 
         tree = ET.ElementTree(products)
         tree.write(self.output_path)
@@ -125,6 +135,31 @@ class PriceScrapper(object):
 
                         first_product[0] = final_product_name
                         second_product[0] = final_product_name
+
+        self.finalized_list = []
+        mark = False
+
+        for p in self.output_list:
+            for s in self.finalized_list:
+                if s[0] == p[0]:
+                    mark = True
+            if mark == True:
+                mark = False
+                continue
+            temp = []
+            temp.append(p[0])
+            plist = []
+            for np in self.output_list:
+
+                plist.append(p[1])
+                if np[0] == temp[0]:
+                    plist.append(np[1])
+            temp.append(plist)
+            self.finalized_list.append(temp)
+
+
+
+
 
 
 

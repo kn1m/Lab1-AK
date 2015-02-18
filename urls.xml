@@ -8,4 +8,10 @@
     <url maintag="span" tag="class" name="sum">
         http://allo.ua/ru/products/notebooks/dell-inspiron-3542-i35345dil-34.html?utm_medium=price_list&amp;utm_source=hotline&amp;utm_term=dell_inspiron_3542_i35345dil_34&amp;utm_campaign=hotline_noutbuki
     </url>
+    <url maintag="span" tag="class" name="sum">
+        http://allo.ua/ru/products/mobile/sony-xperia-z1-c6902-black.html
+    </url>
+    <url maintag="div" tag="id" name="product_price_body">
+        http://koba.ua/product/canon_powershot_sx220_hs_purple_5047b015
+    </url>
 </urls>
