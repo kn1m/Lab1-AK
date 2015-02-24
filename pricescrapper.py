@@ -8,6 +8,7 @@ from xml.dom import minidom
 import re
 from stringparser import StringParser
 
+
 class PriceScrapper(object):
 
     def __init__(self, input_path, output_path):
@@ -147,20 +148,3 @@ class PriceScrapper(object):
                     plist.append(np[1])
             temp.append(plist)
             self.finalized_list.append(temp)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
