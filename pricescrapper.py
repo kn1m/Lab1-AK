@@ -1,12 +1,12 @@
-__author__ = 'kn1m'
 
-import os
 import xml.etree.ElementTree as ET
-from urllib2 import Request, urlopen, URLError, HTTPError
+from urllib2 import urlopen, URLError, HTTPError
 from lxml import etree, html
 from xml.dom import minidom
 import re
 from stringparser import StringParser
+import os
+import gevent
 
 
 class PriceScrapper(object):
@@ -21,6 +21,8 @@ class PriceScrapper(object):
         self.input_path = input_path
         self.output_path = output_path
         self.tags = []
+        self.output_list = []
+        self.finalized_list = []
 
     def get_urls_from_xml(self):
         urls = []
@@ -44,7 +46,6 @@ class PriceScrapper(object):
             self.tags.append(temporary)
 
     def scrapper(self, resources):
-        self.output_list = []
         for resource in resources:
             try:
                 test_req = urlopen(resource).read()
@@ -98,8 +99,8 @@ class PriceScrapper(object):
         for i, c1 in enumerate(s1):
             current_row = [i + 1]
             for j, c2 in enumerate(s2):
-                insertions = previous_row[j + 1] + 1 # j+1 instead of j since previous_row and current_row are one character longer
-                deletions = current_row[j] + 1       # than s2
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
                 substitutions = previous_row[j] + (c1 != c2)
                 current_row.append(min(insertions, deletions, substitutions))
             previous_row = current_row
@@ -107,10 +108,7 @@ class PriceScrapper(object):
 
     def finalize_result(self):
         cur = self
-
         for first_product in self.output_list:
-            current_product = first_product[0]
-
             for second_product in self.output_list:
                 # using Levenshtein distance algo to compare product names
                     if cur.levenshtein(first_product[0], second_product[0]) < 15:
@@ -119,7 +117,7 @@ class PriceScrapper(object):
 
                         final_product_name = ''
 
-                        # taking same words from both lists and creating new string w/ delimiters removing
+                        # taking same words from both lists and creating new word w/ delimiters removing
                         for f in fp:
                             for s in sp:
                                 if str(s) == str(f) and len(s) > 1 and len(f) > 1:
@@ -128,14 +126,13 @@ class PriceScrapper(object):
                         first_product[0] = final_product_name
                         second_product[0] = final_product_name
 
-        self.finalized_list = []
         mark = False
 
         for p in self.output_list:
             for s in self.finalized_list:
                 if s[0] == p[0]:
                     mark = True
-            if mark == True:
+            if mark:
                 mark = False
                 continue
             temp = []
@@ -148,3 +145,16 @@ class PriceScrapper(object):
                     plist.append(np[1])
             temp.append(plist)
             self.finalized_list.append(temp)
+
+    def multitask_scrapper(self, resources):
+        data = []
+        for url in resources:
+            temporary = []
+            temporary.append(url)
+            data.append(temporary)
+        jobs = [gevent.spawn(self.scrapper, d) for d in data]
+        gevent.wait(jobs)
+        #results = [g.value for g in jobs]
+        #return results
+
+

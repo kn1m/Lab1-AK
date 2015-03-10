@@ -9,7 +9,6 @@ class TestPriceScrapper(TestCase):
         s = PriceScrapper('../urls.xml', 'res.xml')
         self.assertRaises(s.get_urls_from_xml)
 
-
     def test_get_tags_from_xml(self):
         s = PriceScrapper('../urls.xml', 'res.xml')
         self.assertRaises(s.get_urls_from_xml)
