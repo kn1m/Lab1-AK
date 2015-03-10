@@ -44,6 +44,7 @@ class PriceScrapper(object):
             temporary.append(s.attributes['tag'].value)
             temporary.append(s.attributes['name'].value)
             self.tags.append(temporary)
+        return self.tags
 
     def scrapper(self, resources):
         for resource in resources:
